@@ -21,7 +21,15 @@
              ?>
 
             <h1 class="text-center">Manage Categories</h1>
+            <div class='starrr'></div>
+            <form method="POST" id="rateForm" action="?do=rate">
+                <input type="hidden" name="getrate" id="getrate" required>
+                <button id="submitRate" type="submit">rate</button>
+            </form>
+            
             <div class="container">
+
+            
 
                 <div class="table-responsive">
                     <table class="table table-striped table-bordered table-dark">
@@ -29,6 +37,7 @@
                             <td>#ID</td>
                             <td>Name</td>
                             <td>Description</td>
+                            <td>Rating</td>
                             <td>Control</td>
                         </tr>
                         <?php 
@@ -43,6 +52,9 @@
                                 }else{
                                     echo $val['description'];
                                 }  ?>
+                                <td>
+                                
+                                </td>
                                 <td>
                                 <a href="categories.php?do=edit&catid=<?php echo $val['ID']; ?>" class="btn btn-success">Edit</a>
                                 <a href="categories.php?do=delete&catid=<?php echo $val['ID']; ?>" class="btn btn-danger confirm">Delete</a>
@@ -92,6 +104,20 @@
 
             <?php
 
+        }elseif($do == 'rate'){
+
+            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                $rate = $_POST['getrate'];
+                $stmt = $con->prepare("INSERT INTO categories (rate) VALUES (:rate)");
+                $stmt->execute(array(
+                    'rate' => $rate,
+                )); 
+
+                echo '<div class="alert alert-success">You add new rate successfuly</div>';
+                header("refresh:2;url=categories.php?do=manage");
+                exit();
+
+            }
         }elseif($do == 'insert'){
 
 
@@ -230,3 +256,61 @@
     }
 ob_end_flush();
 ?>
+
+
+<!-- rate error Modal -->
+<div class="modal fade" id="errorRateModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLongTitle">please rate</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body text-center">
+        <i class="fas fa-exclamation-circle fa-5x" style="color:red;"></i>
+        <br>
+        <h4>please rate</h4>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    $(function(){
+        $('#exampleModal').on('shown.bs.modal', function () {
+            $('#myInput').trigger('focus')
+        })
+        var getrate = document.getElementById('getrate');
+        $(".starrr").starrr({
+            rating: 5,
+        });
+
+        $('.starrr').on('starrr:change', function(e, value){
+            getrate.value = value;
+        })
+        
+        $('#submitRate').on('click',function(){
+            if(getrate.value == ''){
+               $('#errorRateModal').modal('show');
+                
+            $("#rateForm").submit(function(e){
+                e.preventDefault();
+            });
+
+        }else{
+            console.log(getrate.value);
+            $("#rateForm").submit(function(e){
+                $(this).unbind('submit').submit();
+            });
+        }
+
+        });
+
+
+    });
+</script>
